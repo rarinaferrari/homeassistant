@@ -1,0 +1,83 @@
+version: '3'
+services:
+  homeassistant:
+    container_name: hass
+    image: homeassistant/home-assistant
+    volumes:
+      - ./hass-config:/config
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    network_mode: host
+    ports:
+      - "8123:8123"
+    depends_on:
+   #   - postgresql
+      - mosquitto
+#  postgresql:
+#    image: postgres
+#    container_name: postgresql
+#    restart: unless-stopped
+#    environment:
+#      POSTGRES_PASSWORD: "naljAil5"
+#      POSTGRES_DATABASE: ha_db
+#      POSTGRES_USER: homeassistant
+#      POSTGRES_HOST_AUTH_METHOD: trust
+#     # postgresql_PASSWORD: "naljAil5"
+#      PUID: 1000
+#      PGID: 1000
+#    volumes:
+#      - ./postgresql:/config
+#    ports:
+#      - "5432:5432"
+  nodered:
+    container_name: nodered
+    image: nodered/node-red
+    ports:
+      - "1880:1880"
+    volumes:
+      - ./nodered:/data
+    depends_on:
+      - homeassistant
+      - mosquitto
+    environment:
+      TZ: "Europe/Moscow"
+    restart: unless-stopped
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+    volumes:
+      - "./mosquitto/config:/mosquitto/config"
+      - "./mosquitto/data:/mosquitto/data"
+      - "./mosquitto/log:/mosquitto/log"
+    environment:
+      - TZ=Europe/Moscow
+    user: "1000:1000"
+  hass-configurator:
+    image: "causticlab/hass-configurator-docker"
+    container_name: hass-configurator
+    restart: unless-stopped
+    ports:
+      - "3218:3218/tcp"
+    depends_on:
+      - homeassistant
+    volumes:
+      - "./configurator-config:/config"
+      - "./hass-config:/hass-config"
+    user: "1000:1000"
+  supervisor:
+    container_name: supervisor
+    image: homeassistant/amd64-hassio-supervisor
+    restart: unless-stopped
+
+  portainer:
+    ports:
+      - "9000:9000"
+    container_name: portainer
+    restart: unless-stopped
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "./portainer/portainer_data:/data"
+    image: portainer/portainer-ce
