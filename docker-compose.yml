@@ -11,24 +11,24 @@ services:
     ports:
       - "8123:8123"
     depends_on:
-   #   - postgresql
+      - postgresql
       - mosquitto
-#  postgresql:
-#    image: postgres
-#    container_name: postgresql
-#    restart: unless-stopped
-#    environment:
-#      POSTGRES_PASSWORD: "naljAil5"
-#      POSTGRES_DATABASE: ha_db
-#      POSTGRES_USER: homeassistant
-#      POSTGRES_HOST_AUTH_METHOD: trust
-#     # postgresql_PASSWORD: "naljAil5"
-#      PUID: 1000
-#      PGID: 1000
-#    volumes:
-#      - ./postgresql:/config
-#    ports:
-#      - "5432:5432"
+  postgresql:
+    image: postgres
+    container_name: postgresql
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ""
+      POSTGRES_DATABASE: ha_db
+      POSTGRES_USER: homeassistant
+      POSTGRES_HOST_AUTH_METHOD: trust
+     # postgresql_PASSWORD: ""
+      PUID: 1000
+      PGID: 1000
+    volumes:
+      - ./postgresql:/config
+    ports:
+      - "5432:5432"
   nodered:
     container_name: nodered
     image: nodered/node-red
