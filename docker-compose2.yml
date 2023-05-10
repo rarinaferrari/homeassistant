@@ -1,0 +1,65 @@
+
+version: '3.9'
+services:
+  homeassistant:
+    container_name: home-assistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    volumes:
+      - /var/calculate/www/homeassistant/config:/config
+      - /var/calculate/www/homeassistant/data:/data
+      - /etc/localtime:/etc/localtime:ro
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+   # command: ["python", "-m", "homeassistant", "--config", "/config", "--script", "ensure_config", "--info"]
+
+  nginx:
+    container_name: nginx
+    image: nginx
+    #ports:
+    #  - "80:80"
+    volumes:
+      - /var/calculate/www/nginx:/etc/nginx/conf.d
+    restart: unless-stopped
+    network_mode: host
+
+  postgresql:
+    container_name: postgresql
+    image: postgres
+    volumes:
+      - /var/calculate/www/postgresql/data:/var/lib/postgresql/data
+    #  - /var/calculate/www/postgresql/init-scripts/:/docker-entrypoint-initdb.d/
+    environment:
+      POSTGRES_DB: homeassistant
+      POSTGRES_USER: homeassistant
+      POSTGRES_PASSWORD: homeassistant
+      #POSTGRES_INITDB_ARGS: "--username=homeassistant --pwprompt --encoding=UTF8"
+    restart: unless-stopped
+    network_mode: host
+
+  zigbee2mqtt:
+    container_name: zigbee2mqtt
+    image: koenkk/zigbee2mqtt:latest
+    volumes:
+      - /var/calculate/www/zigbee2mqtt/data:/app/data
+      - /var/calculate/www/zigbee2mqtt/config:/app/config
+    environment:
+      - UID=0
+      - GID=20
+    devices:
+      - /dev/ttyUSB0:/dev/ttyUSB0:rw
+      - /dev/ttyACM0:/dev/ttyACM0:rw
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+
+  portainer:
+    container_name: portainer
+    image: portainer/portainer-ce
+    #ports:
+    #  - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/calculate/www/portainer:/data
+    restart: unless-stopped
+    network_mode: host
